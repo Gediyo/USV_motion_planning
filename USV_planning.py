@@ -113,8 +113,8 @@ def main():
     print("Executing: " + __file__)
 
        
-    v_cx = 0     # current in the x direction on the inertial frame
-    v_cy = 0     # current in the y direction on the inertial frame
+    v_cx = 3     # current in the x direction on the inertial frame
+    v_cy = 3     # current in the y direction on the inertial frame
     V_c = np.sqrt((v_cx**2) + (v_cy**2))
     beta_c = np.arctan2(v_cy,v_cx)
 

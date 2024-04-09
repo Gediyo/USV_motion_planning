@@ -22,6 +22,14 @@ class Plotting:
         self.plot_visited(nodelist, animation)
         self.plot_path(path)
 
+    def animation_SPRRT(self, rrt_vertex, path_stree,rrt_s_vertex, name, animation=False):
+        self.plot_grid(name)
+        self.plot_visited(rrt_vertex, False)
+        # self.plot_visited(rrt_s_vertex, animation)
+        # self.plot_visited_spRRT(self, rrt_vertex,animation)
+        self.plot_path(path_stree)
+
+
     def animation_connect(self, V1, V2, path, name):
         self.plot_grid(name)
         self.plot_visited_connect(V1, V2)
@@ -29,6 +37,7 @@ class Plotting:
 
     def plot_grid(self, name):
         fig, ax = plt.subplots()
+        ax.grid(True)
 
         for (ox, oy, w, h) in self.obs_bound:
             ax.add_patch(
@@ -73,7 +82,7 @@ class Plotting:
             for node in nodelist:
                 count += 1
                 if node.parent:
-                    plt.plot([node.parent.x, node.x], [node.parent.y, node.y], "-g")
+                    plt.plot([node.parent.x, node.x], [node.parent.y, node.y], "--g")
                     plt.gcf().canvas.mpl_connect('key_release_event',
                                                  lambda event:
                                                  [exit(0) if event.key == 'escape' else None])
@@ -82,8 +91,44 @@ class Plotting:
         else:
             for node in nodelist:
                 if node.parent:
-                    plt.plot([node.parent.x, node.x], [node.parent.y, node.y], "-g")
+                    plt.plot([node.parent.x, node.x], [node.parent.y, node.y], "--g")
 
+
+    # @staticmethod
+    # def plot_visited_spRRT(self,nodelist, animation):
+    #     if animation:
+    #         count = 0
+    #         for node in nodelist:
+    #             count += 1
+    #             if node.parent:
+    #                 plt.plot([node.parent.x, node.x], [node.parent.y, node.y], "-b")
+    #                 spRRT_path = self.extract_subpath(node.parent.brother, node.brother)
+    #                 self.plot_visited(spRRT_path,False)
+    #                 plt.gcf().canvas.mpl_connect('key_release_event',
+    #                                              lambda event:
+    #                                              [exit(0) if event.key == 'escape' else None])
+
+    #                 if count % 10 == 0:
+    #                     plt.pause(0.001)
+    #     else:
+    #         for node in nodelist:
+    #             if node.parent:
+    #                 plt.plot([node.parent.x, node.x], [node.parent.y, node.y], "-b")
+    #                 spRRT_path = self.extract_subpath(node.parent.brother, node.brother)
+    #                 self.plot_visited(spRRT_path,False)
+
+
+    # def extract_subpath(self,node_start, node_end):
+    #     path = [node_end]
+    #     node_now = node_end
+
+    #     while node_now.parent is not node_start:            
+    #         path.append(node_now.parent)
+    #     path.append(node_start)
+    #     reverse_path = path[::-1]
+
+    #     return reverse_path
+    
     @staticmethod
     def plot_visited_connect(V1, V2):
         len1, len2 = len(V1), len(V2)

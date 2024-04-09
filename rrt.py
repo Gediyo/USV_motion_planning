@@ -97,10 +97,11 @@ class Rrt:
 
     def planning(self):
         
-
-
         
         for i in range(self.iter_max):
+
+            if i % 100 == 0:
+                print(i)
             node_rand = self.generate_random_node(self.goal_sample_rate)
             node_near = self.nearest_neighbor(self.vertex, node_rand)
             node_new = self.new_state(node_near, node_rand)
@@ -118,11 +119,15 @@ class Rrt:
                     if dist <= self.step_len and not self.utils.is_collision(node_new, self.s_goal):
                         expand_final_stree = self.predict_state(node_new, self.s_goal)
                         if expand_final_stree:
-                            self.new_state(node_new, self.s_goal)
-                            return self.extract_path(node_new), self.extract_path(self.s_vertex[-1])
+                            last_node = self.new_state(node_new, self.s_goal)
+                            self.s_vertex[-1].brother = last_node
+                            last_node.brother = self.s_vertex[-1]
+                            return self.extract_path(node_new), self.extract_trajectory(self.s_vertex[-1])
                         
 
         return None
+    
+
     
     def predict_state(self, node_near, node_new):
 
@@ -145,22 +150,10 @@ class Rrt:
             U = new_nu[0]  # linear velocity of the vessel
             r = new_nu[5]  # angular velocity of the vessel
 
-            for t in range (20):
+            for t in range (1, 21):
                 State_projection = []
                 old_node = new_node
 
-                # update the state in the inertial frame
-                # new_node.yaw += dt * r
-                # new_node.x += dt * U * np.cos(new_node.yaw)
-                # new_node.y += dt * U * np.sin(new_node.yaw)
-                
-                # new_node.yaw = self.wraptopi(new_node.yaw)
-
-                # adding the ocean current effect
-                # new_node.x += self.U_c[0] * dt
-                # new_node.y += self.U_c[1] * dt
-
-                # new_node.parent = old_node
 
                 yaw = new_node.yaw + (dt * r)
                 x = new_node.x + (dt * U * np.cos(new_node.yaw))
@@ -173,7 +166,7 @@ class Rrt:
                 new_node.parent = old_node
 
 
-                State_projection.append(new_node.copy())
+                State_projection.append(new_node)
 
                 if self.utils.is_collision(old_node, new_node):
                     
@@ -181,8 +174,6 @@ class Rrt:
 
                 if math.hypot(new_node.x - node_new.x, new_node.y - node_new.y) <= self.Er:
                     self.s_vertex += State_projection
-                    
-
 
                     return True
                     
@@ -225,6 +216,16 @@ class Rrt:
             path.append((node_now.x, node_now.y))
 
         return path
+    
+    def extract_trajectory(self, node_end):
+        path = [(node_end.x, node_end.y)]
+        node_now = node_end
+
+        while node_now.parent is not None:
+            node_now = node_now.parent
+            path.append((node_now.x, node_now.y))
+
+        return path
 
     @staticmethod
     def get_distance_and_angle(node_start, node_end):
@@ -248,13 +249,14 @@ def main():
 
     USV = USV_model.frigate(U = 5, r = 0 )  # r = 0 represent that the vessile can't rotate in place
 
-    rrt = Rrt(x_start, x_goal, 450, 0.05, 10000, USV, U_c)
+    rrt = Rrt(x_start, x_goal, 450, 0.1, 10000, USV, U_c)
 
-    path_wtree,path_stree = rrt.planning()
+    path_wtree, path_stree = rrt.planning()
 
     if path_wtree:
-        rrt.plotting.animation(rrt.vertex, path_wtree, "RRT", True)
-        rrt.plotting.animation(rrt.s_vertex, path_stree, "spRRT", True)
+        # rrt.plotting.animation(rrt.vertex, path_wtree, "RRT", True)
+        # rrt.plotting.animation(rrt.s_vertex, path_stree, "spRRT", True)
+        rrt.plotting.animation_SPRRT(rrt.vertex, path_stree, rrt.s_vertex, "spRRT", True)
 
     else:
         print("No Path Found!")
