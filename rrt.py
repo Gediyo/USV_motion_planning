@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
                 "/../../Sampling_based_Planning/")
 
 import env, plotting, utils
-import USV_planning, USV_model
+import USV_model
 
 
 class Node:
@@ -100,8 +100,9 @@ class Rrt:
         
         for i in range(self.iter_max):
 
-            if i % 100 == 0:
+            if i % 500 == 0:
                 print(i)
+
             node_rand = self.generate_random_node(self.goal_sample_rate)
             node_near = self.nearest_neighbor(self.vertex, node_rand)
             node_new = self.new_state(node_near, node_rand)
