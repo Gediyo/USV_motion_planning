@@ -83,7 +83,7 @@ class RrtStar:
         self.path = []                                      # workspace tree path
 
         self.s_vertex = [self.s_start]                      # state tree vertex
-        self.spath = []                                     # state tree path
+        self.path_stree = []                                     # state tree path
         self.Er = 30                                        # radius arounnd the node
         self.USV = USV                                      # USV model
         self.U_c = U_c                                      # water current
@@ -108,33 +108,38 @@ class RrtStar:
             if k % 500 == 0: # print the iteration number every 500 iteration
                 print(k)
 
+
             if node_new and not self.utils.is_collision(node_near, node_new):
                 expand_stree, State_projection = self.predict_state(node_near, node_new)
                 if expand_stree:
                     self.s_vertex += State_projection
-                    self.s_vertex[-1].brother = node_new
-                    node_new.brother = self.s_vertex[-1]
-                    node_new.cost = self.s_vertex[-1].cost
-                    neighbor_index = self.find_near_neighbor(node_new)
-                    neighbor_s_index = self.corresonding_stree_index(neighbor_index)
-                    self.vertex.append(node_new)
+                    self.s_vertex[-1].brother = node_new      # assigning a sibling to the last stree node
+                    node_new.brother = self.s_vertex[-1]      # assigning a sibling to node_new
+                    node_new.cost = self.s_vertex[-1].cost    # assigning cost to new node
+                    self.vertex.append(node_new)              # adding node_new to the wtree(vertex)
+
+                    # find neighbouring indices
+                    neighbor_index = self.find_near_neighbor(node_new)            
+                    
+                    
 
                     # if neighbor_index:
                     #     self.choose_parent(node_new, neighbor_index)
                     #     self.rewire(node_new, neighbor_index)
 
-                    if neighbor_s_index:
-                        self.choose_s_parent(node_new, neighbor_s_index)
-                        self.stree_rewire(node_new, neighbor_s_index)
+                    if neighbor_index:
+                        self.choose_s_parent(node_new, neighbor_index)
+                        self.stree_rewire(node_new, neighbor_index)
 
         index = self.search_goal_parent()
+        print("index is: ", index)
         self.path = self.extract_path(self.vertex[index])
-        self.spath = self.extract_trajectory(self.vertex[index].brother)
+        self.path_stree = self.extract_trajectory(self.vertex[index].brother)
 
-
+        print("trajectory:", self.path_stree)
         # self.plotting.animation(self.vertex, self.path, "rrt*, N = " + str(self.iter_max))
 
-        plotting.animation_SPRRT(self.vertex, self.spath, self.s_vertex, "spRRT-star", True)
+        self.plotting.animation_SPRRT(self.vertex, self.path_stree, self.s_vertex, "spRRT-star", True)
 
     def predict_state(self, node_near, node_new):
 
@@ -186,9 +191,9 @@ class RrtStar:
                     
         return False, []
 
-    def corresonding_stree_index(self, neighbor_index):
-        stree_neighbor_index = [self.s_vertex.index(self.vertex[i].brother) for i in neighbor_index]
-        return stree_neighbor_index
+    # def corresonding_stree_index(self, neighbor_index):
+    #     stree_neighbor_index = [self.s_vertex.index(self.vertex[i].brother) for i in neighbor_index]
+    #     return stree_neighbor_index
 
     def new_state(self, node_start, node_goal):
         dist, theta = self.get_distance_and_angle(node_start, node_goal)
@@ -207,20 +212,21 @@ class RrtStar:
         cost_min_index = neighbor_index[int(np.argmin(cost))]
         node_new.parent = self.vertex[cost_min_index]
 
-    def choose_s_parent(self, node_new, neighbor_s_index):
+    def choose_s_parent(self, node_new, neighbor_index):
         # cost = [self.s_vertex[i].cost for i in neighbor_s_index]
         # cost_min_index = neighbor_s_index[int(np.argmin(cost))]
 
-        sorted_snodes = sorted(neighbor_s_index, key = lambda x: self.s_vertex[x].cost)
+        # sorted_snodes = sorted(neighbor_s_index, key = lambda x: self.s_vertex[x].cost)
+        sorted_nodes = sorted(neighbor_index, key = lambda x: self.vertex[x].cost)
 
-        for index in sorted_snodes:
-            path_exist, node_list = self.predict_state(self.s_vertex[index].brother, node_new)
+        for index in sorted_nodes:
+
+            path_exist, node_list = self.predict_state(self.vertex[index], node_new)
 
             if path_exist:
-                node_list[0].parent = self.s_vertex[index] # assign the begining of the path to lowest cost index
                 self.s_vertex += node_list # add the node list to the state tree
-                node_new.parent = self.s_vertex[index].brother
-                node_new.brother = node_list[-1]
+                node_new.parent = self.vertex[index]
+                node_new.brother = self.s_vertex[-1]
                 break
 
     def rewire(self, node_new, neighbor_index):
@@ -230,16 +236,19 @@ class RrtStar:
             if self.cost(node_neighbor) > self.get_new_cost(node_new, node_neighbor):
                 node_neighbor.parent = node_new
 
-    def stree_rewire(self, node_new, neighbor_s_index):
-        for i in neighbor_s_index:
-            node_neighbor = self.s_vertex[i]
+    def stree_rewire(self, node_new, neighbor_index):
+        for i in neighbor_index:
+            node_neighbor = self.vertex[i]
             
             path_exist, node_list = self.predict_state(node_new, node_neighbor)
 
-            if path_exist and self.cost(node_neighbor) > node_list[-1].cost:
-                node_neighbor.brother.parent = node_new
-                node_neighbor.brother.brother = node_list[-1]
-                self.s_vertex += node_list 
+            # if path exists and neighbor node cost higher than the cost to get there through node new
+            if path_exist and node_neighbor.cost > node_list[-1].cost:
+                node_neighbor.parent = node_new             # assign parent of the neighbouring node to node_new
+                self.s_vertex += node_list                  # add the node_list to stree
+                node_neighbor.brother = self.s_vertex[-1]   #assign the sibling to be the last of node list
+                self.s_vertex[-1].brother = node_neighbor   # update sibling on the wtree
+                node_neighbor.cost = self.s_vertex[-1].cost # update cost
 
     def search_goal_parent(self):
         # caculates dist between the workspace tree and the goal node
