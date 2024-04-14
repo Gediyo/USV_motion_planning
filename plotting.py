@@ -29,6 +29,13 @@ class Plotting:
         # self.plot_visited_spRRT(self, rrt_vertex,animation)
         self.plot_path(path_stree)
 
+    def animation_SPRRT_star(self, rrt_vertex, path_stree,rrt_s_vertex, name, animation=False):
+        self.plot_grid(name)
+        # self.plot_visited(rrt_vertex, False)
+        # self.plot_visited(rrt_s_vertex, animation)
+        # self.plot_visited_spRRT(self, rrt_vertex,animation)
+        self.plot_path(path_stree)
+
 
     def animation_connect(self, V1, V2, path, name):
         self.plot_grid(name)

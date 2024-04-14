@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
 import env, plotting, utils, queue
 import USV_model
 
-
+# np.random.seed(56)  # seeding the random number generator
 class Node:
     def __init__(self, n):
 
@@ -83,7 +83,7 @@ class RrtStar:
         self.path = []                                      # workspace tree path
 
         self.s_vertex = [self.s_start]                      # state tree vertex
-        self.path_stree = []                                     # state tree path
+        self.path_stree = []                                # state tree path
         self.Er = 30                                        # radius arounnd the node
         self.USV = USV                                      # USV model
         self.U_c = U_c                                      # water current
@@ -106,7 +106,7 @@ class RrtStar:
             node_new = self.new_state(node_near, node_rand)
 
             if k % 500 == 0: # print the iteration number every 500 iteration
-                print(k)
+                print("Iteration: ",k)
 
 
             if node_new and not self.utils.is_collision(node_near, node_new):
@@ -120,26 +120,21 @@ class RrtStar:
 
                     # find neighbouring indices
                     neighbor_index = self.find_near_neighbor(node_new)            
-                    
-                    
-
-                    # if neighbor_index:
-                    #     self.choose_parent(node_new, neighbor_index)
-                    #     self.rewire(node_new, neighbor_index)
 
                     if neighbor_index:
                         self.choose_s_parent(node_new, neighbor_index)
                         self.stree_rewire(node_new, neighbor_index)
 
         index = self.search_goal_parent()
-        print("index is: ", index)
         self.path = self.extract_path(self.vertex[index])
+
+        print("path: extracted")
         self.path_stree = self.extract_trajectory(self.vertex[index].brother)
 
-        print("trajectory:", self.path_stree)
+        print("trajectory: obtained")
         # self.plotting.animation(self.vertex, self.path, "rrt*, N = " + str(self.iter_max))
-
         self.plotting.animation_SPRRT(self.vertex, self.path_stree, self.s_vertex, "spRRT-star", True)
+        self.plotting.animation_SPRRT_star(self.vertex, self.path_stree, self.s_vertex, "spRRT-star", True)
 
     def predict_state(self, node_near, node_new):
 
@@ -220,6 +215,8 @@ class RrtStar:
         sorted_nodes = sorted(neighbor_index, key = lambda x: self.vertex[x].cost)
 
         for index in sorted_nodes:
+            if index == self.vertex.index(node_new) or index == self.vertex.index(node_new.parent):
+                continue
 
             path_exist, node_list = self.predict_state(self.vertex[index], node_new)
 
@@ -227,6 +224,7 @@ class RrtStar:
                 self.s_vertex += node_list # add the node list to the state tree
                 node_new.parent = self.vertex[index]
                 node_new.brother = self.s_vertex[-1]
+                node_new.cost = self.s_vertex[-1].cost
                 break
 
     def rewire(self, node_new, neighbor_index):
@@ -238,6 +236,10 @@ class RrtStar:
 
     def stree_rewire(self, node_new, neighbor_index):
         for i in neighbor_index:
+
+            if i == self.vertex.index(node_new) or i == self.vertex.index(node_new.parent):
+                continue
+
             node_neighbor = self.vertex[i]
             
             path_exist, node_list = self.predict_state(node_new, node_neighbor)
@@ -327,6 +329,7 @@ class RrtStar:
         node = node_end
 
         while node.parent is not None:
+            print("index appending to path:", self.vertex.index(node))
             path.append([node.x, node.y])
             node = node.parent
         path.append([node.x, node.y])

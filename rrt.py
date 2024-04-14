@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
 import env, plotting, utils
 import USV_model
 
+# np.random.seed(10) # seeding a random number generator
 
 class Node:
     def __init__(self, n):
@@ -101,7 +102,7 @@ class Rrt:
         for i in range(self.iter_max):
 
             if i % 500 == 0:
-                print(i)
+                print("Iteration: ",i)
 
             node_rand = self.generate_random_node(self.goal_sample_rate)
             node_near = self.nearest_neighbor(self.vertex, node_rand)
