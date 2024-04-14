@@ -114,6 +114,7 @@ class Rrt:
                 if expand_stree:
                     self.s_vertex[-1].brother = node_new
                     node_new.brother = self.s_vertex[-1]
+                    node_new.cost = self.s_vertex[-1].cost
                     self.vertex.append(node_new)
                     
                     dist, _ = self.get_distance_and_angle(node_new, self.s_goal)
@@ -124,6 +125,7 @@ class Rrt:
                             last_node = self.new_state(node_new, self.s_goal)
                             self.s_vertex[-1].brother = last_node
                             last_node.brother = self.s_vertex[-1]
+                            last_node.cost = self.s_vertex[-1].cost
                             return self.extract_path(node_new), self.extract_trajectory(self.s_vertex[-1]), last_node.cost
                         
 
@@ -166,6 +168,7 @@ class Rrt:
 
                 new_node = Node([x,y,yaw])
                 new_node.parent = old_node
+                new_node.cost = old_node.cost + dt
 
 
                 State_projection.append(new_node)

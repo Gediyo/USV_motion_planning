@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
 import env, plotting, utils, queue
 import USV_model
 
-np.random.seed(56)  # seeding the random number generator
+# np.random.seed(56)  # seeding the random number generator
 class Node:
     def __init__(self, n):
 
@@ -126,17 +126,23 @@ class RrtStar:
                         self.stree_rewire(node_new, neighbor_index)
 
         index = self.search_goal_parent()
-        self.path = self.extract_path(self.vertex[index])
+        if index is not None:
 
-        print("path: extracted")
-        self.path_stree = self.extract_trajectory(self.vertex[index].brother)
+            self.path = self.extract_path(self.vertex[index])
 
-        print("trajectory: obtained")
-        # self.plotting.animation(self.vertex, self.path, "rrt*, N = " + str(self.iter_max))
-        self.plotting.animation_SPRRT(self.vertex, self.path_stree, self.s_vertex, "spRRT-star", True)
-        self.plotting.animation_SPRRT_star(self.vertex, self.path_stree, self.s_vertex, "spRRT-star", True)
+            print("path: extracted")
+            self.path_stree = self.extract_trajectory(self.vertex[index].brother)
 
-        return self.vertex[index].cost
+            print("trajectory: obtained")
+            # self.plotting.animation(self.vertex, self.path, "rrt*, N = " + str(self.iter_max))
+            self.plotting.animation_SPRRT(self.vertex, self.path_stree, self.s_vertex, "spRRT-star", True)
+            self.plotting.animation_SPRRT_star(self.vertex, self.path_stree, self.s_vertex, "spRRT-star", True)
+
+            return self.vertex[index].cost
+        else:
+            print("No path found!")
+            return 0
+            
 
     def predict_state(self, node_near, node_new):
 
@@ -268,7 +274,7 @@ class RrtStar:
 
             return node_index[int(np.argmin(cost_s_list))] # returns based on lower cost of the state tree
 
-        return len(self.vertex) - 1    # or return the last node 
+        return None    # or return the last node 
 
     def get_new_cost(self, node_start, node_end):
         dist, _ = self.get_distance_and_angle(node_start, node_end)
@@ -331,7 +337,6 @@ class RrtStar:
         node = node_end
 
         while node.parent is not None:
-            print("index appending to path:", self.vertex.index(node))
             path.append([node.x, node.y])
             node = node.parent
         path.append([node.x, node.y])

@@ -22,6 +22,7 @@ def main():
     i_num = 2
 
     for i in range(i_num):
+        print('Iteration:', i )
         # start_x = np.random.uniform(1.5,4 )
         # start_y = np.random.uniform(2, 18)
         # start_yaw = np.random.uniform(0, 2*np.pi)
@@ -54,7 +55,7 @@ def main():
         # rrt algorithm
         RRT = rrt.Rrt(start, goal, 450, 0.1, 10000, USV, U_c)
 
-        _ ,_, RRT_cost = RRT.planning()
+        _ , _, RRT_cost = RRT.planning()
         
         #saving the result for RRT algorithm
         if RRT_cost is not None:
@@ -62,7 +63,7 @@ def main():
         else:
             rrt_cost.append(0)
         
-        print('Iteration:', i )
+        
 
     def calculate_average(numbers):
         total = sum(numbers)
