@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
 import env, plotting, utils
 import USV_model
 
-# np.random.seed(10) # seeding a random number generator
+# np.random.seed(6) # seeding a random number generator
 
 class Node:
     def __init__(self, n):
@@ -96,13 +96,13 @@ class Rrt:
         self.obs_rectangle = self.env.obs_rectangle         # rectangular obstacle
         self.obs_boundary = self.env.obs_boundary           # boundary obstacle
 
+
     def planning(self):
-        
         
         for i in range(self.iter_max):
 
             if i % 500 == 0:
-                print("Iteration: ",i)
+                print("RRT iteration: ",i)
 
             node_rand = self.generate_random_node(self.goal_sample_rate)
             node_near = self.nearest_neighbor(self.vertex, node_rand)
@@ -124,10 +124,10 @@ class Rrt:
                             last_node = self.new_state(node_new, self.s_goal)
                             self.s_vertex[-1].brother = last_node
                             last_node.brother = self.s_vertex[-1]
-                            return self.extract_path(node_new), self.extract_trajectory(self.s_vertex[-1])
+                            return self.extract_path(node_new), self.extract_trajectory(self.s_vertex[-1]), last_node.cost
                         
 
-        return None
+        return None, None, None
     
 
     
@@ -244,16 +244,16 @@ class Rrt:
 
 
 def main():
-    x_start = (2, 2, 0)  # Starting node
-    x_goal = (9500, 5000, np.pi)  # Goal node
+    x_start = (-2, 2, 0)  # Starting node
+    x_goal = (4000, 4000, np.pi)  # Goal node
 
-    U_c = [0, 0]
+    U_c = [0, 2]
 
     USV = USV_model.frigate(U = 5, r = 0 )  # r = 0 represent that the vessile can't rotate in place
 
     rrt = Rrt(x_start, x_goal, 450, 0.1, 10000, USV, U_c)
 
-    path_wtree, path_stree = rrt.planning()
+    path_wtree, path_stree, _ = rrt.planning()
 
     if path_wtree:
         # rrt.plotting.animation(rrt.vertex, path_wtree, "RRT", True)
@@ -262,9 +262,6 @@ def main():
 
     else:
         print("No Path Found!")
-
-
-
 
 if __name__ == '__main__':
     main()

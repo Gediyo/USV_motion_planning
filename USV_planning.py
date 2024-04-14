@@ -96,7 +96,7 @@ def otter_propagate(USV, SS, U_c):
 
     return State_projection
 
-def plot_arrow(x, y, yaw, length=5.0, width=3, fc="r", ec="k"):  # pragma: no cover
+def plot_arrow(x, y, yaw, length=7.0, width=3, fc="k", ec="k"):  # pragma: no cover
     """
     Plot arrow
     """
@@ -113,8 +113,8 @@ def main():
     print("Executing: " + __file__)
 
        
-    v_cx = 3     # current in the x direction on the inertial frame
-    v_cy = 3     # current in the y direction on the inertial frame
+    v_cx = -2     # current in the x direction on the inertial frame
+    v_cy = 2     # current in the y direction on the inertial frame
     V_c = np.sqrt((v_cx**2) + (v_cy**2))
     beta_c = np.arctan2(v_cy,v_cx)
 

@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
 import env, plotting, utils, queue
 import USV_model
 
-# np.random.seed(56)  # seeding the random number generator
+np.random.seed(56)  # seeding the random number generator
 class Node:
     def __init__(self, n):
 
@@ -106,7 +106,7 @@ class RrtStar:
             node_new = self.new_state(node_near, node_rand)
 
             if k % 500 == 0: # print the iteration number every 500 iteration
-                print("Iteration: ",k)
+                print("RRT_star iteration: ",k)
 
 
             if node_new and not self.utils.is_collision(node_near, node_new):
@@ -135,6 +135,8 @@ class RrtStar:
         # self.plotting.animation(self.vertex, self.path, "rrt*, N = " + str(self.iter_max))
         self.plotting.animation_SPRRT(self.vertex, self.path_stree, self.s_vertex, "spRRT-star", True)
         self.plotting.animation_SPRRT_star(self.vertex, self.path_stree, self.s_vertex, "spRRT-star", True)
+
+        return self.vertex[index].cost
 
     def predict_state(self, node_near, node_new):
 
@@ -262,7 +264,7 @@ class RrtStar:
         if len(node_index) > 0:
             # cost_list = [dist_list[i] + self.cost(self.vertex[i]) for i in node_index
             #              if not self.utils.is_collision(self.vertex[i], self.s_goal)]
-            cost_s_list = [self.vertex[i].brother.cost for i in node_index]
+            cost_s_list = [self.vertex[i].cost for i in node_index]
 
             return node_index[int(np.argmin(cost_s_list))] # returns based on lower cost of the state tree
 
@@ -356,7 +358,7 @@ class RrtStar:
 def main():
     
     x_start = (2, 2, 0)  # Starting node
-    x_goal = (9500, 5000, np.pi)  # Goal node
+    x_goal = (4700, 2500, np.pi)  # Goal node
 
     U_c = [0, 0]
 
