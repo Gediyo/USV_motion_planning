@@ -259,7 +259,7 @@ class RrtStar:
         dist_list = [math.hypot(n.x - self.s_goal.x, n.y - self.s_goal.y) for n in self.vertex] 
 
         # index of nodes from the workspace tree that are within step distance from the goal
-        node_index = [i for i in range(len(dist_list)) if dist_list[i] <= self.step_len]
+        node_index = [i for i in range(len(dist_list)) if dist_list[i] <= self.Er]
 
         if len(node_index) > 0:
             # cost_list = [dist_list[i] + self.cost(self.vertex[i]) for i in node_index
